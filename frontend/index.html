@@ -79,6 +79,9 @@
     </style>
 </head>
 <body class="text-gray-100 min-h-screen flex flex-col antialiased">
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed top-6 right-6 z-[100] space-y-3 pointer-events-none"></div>
+
     <!-- Header -->
     <header class="border-b border-white/5 bg-panelBg/80 backdrop-blur-md px-6 py-4 flex items-center justify-between sticky top-0 z-50">
         <div class="flex items-center space-x-3">
@@ -87,19 +90,18 @@
             </div>
             <div>
                 <span class="text-xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-100 to-gray-400">NexusIQ</span>
-                <span class="text-xs block text-cyan-400 font-bold tracking-widest uppercase">Agentic Decision Cockpit</span>
+                <span class="text-[9px] block text-cyan-400 font-bold tracking-widest uppercase">Agentic Decision Cockpit</span>
             </div>
         </div>
         
-        <!-- Dashboard Live Status Info -->
-        <div class="flex items-center space-x-6">
-            <div class="hidden md:flex items-center space-x-2 text-xs">
-                <span class="text-gray-500">Live Workspace:</span>
-                <span class="font-mono text-gray-300">m:\xlvent</span>
-            </div>
+        <!-- Dashboard Live Status & Inspector Modal Trigger -->
+        <div class="flex items-center space-x-4">
+            <button onclick="openArchModal()" class="text-[10px] bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 px-3 py-1.5 rounded-lg transition font-bold tracking-wider uppercase">
+                📐 Architecture Inspector
+            </button>
             <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-glow-emerald/10">
                 <span class="w-1.5 h-1.5 mr-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                System Ready
+                System Connected
             </span>
         </div>
     </header>
@@ -157,34 +159,42 @@
                 <!-- Selected Customer Header Summary -->
                 <div class="glass-panel rounded-2xl p-6 shadow-xl relative overflow-hidden">
                     <div class="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
-                    <div class="flex items-start justify-between">
-                        <div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex-grow">
                             <div class="flex items-center space-x-3 mb-1.5">
                                 <h2 id="selected-customer-name" class="text-2xl font-bold text-white tracking-tight">Acme Corp</h2>
-                                <span id="selected-customer-industry" class="text-[10px] font-bold bg-white/5 text-cyan-400 border border-white/5 px-2.5 py-0.5 rounded-full uppercase tracking-wider">Fintech</span>
+                                <span id="selected-customer-industry" class="text-[10px] font-bold bg-white/5 text-cyan-400 border border-white/5 px-2.5 py-0.5 rounded-full uppercase tracking-wider font-mono">Fintech</span>
                             </div>
-                            <div class="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-2 mt-4 text-xs">
+                            <div class="grid grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-2.5 mt-4 text-xs">
                                 <div>
-                                    <span class="text-gray-500 block text-[10px] uppercase tracking-wider mb-0.5">Annual Revenue</span>
-                                    <span id="selected-customer-arr" class="font-semibold text-gray-200">$180,000</span>
+                                    <span class="text-gray-500 block text-[10px] uppercase tracking-wider mb-0.5 font-bold">Annual Revenue</span>
+                                    <span id="selected-customer-arr" class="font-semibold text-gray-200 font-mono">$180,000</span>
                                 </div>
                                 <div>
-                                    <span class="text-gray-500 block text-[10px] uppercase tracking-wider mb-0.5">Health Score</span>
-                                    <span id="selected-customer-health" class="font-semibold text-emerald-400">82/100</span>
-                                </div>
-                                <div>
-                                    <span class="text-gray-500 block text-[10px] uppercase tracking-wider mb-0.5">Tier Segment</span>
+                                    <span class="text-gray-500 block text-[10px] uppercase tracking-wider mb-0.5 font-bold">Tier Segment</span>
                                     <span id="selected-customer-segment" class="font-semibold text-gray-200">Enterprise</span>
                                 </div>
                                 <div>
-                                    <span class="text-gray-500 block text-[10px] uppercase tracking-wider mb-0.5">Contract Renewal</span>
-                                    <span id="selected-customer-renewal" class="font-semibold text-gray-200">2026-12-31</span>
+                                    <span class="text-gray-500 block text-[10px] uppercase tracking-wider mb-0.5 font-bold">Contract Renewal</span>
+                                    <span id="selected-customer-renewal" class="font-semibold text-gray-200 font-mono">2026-12-31</span>
                                 </div>
                             </div>
                         </div>
-                        <div class="flex flex-col items-end">
-                            <span id="selected-customer-status-badge" class="px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider">Warning</span>
-                            <span class="text-[11px] text-gray-500 mt-2.5" id="selected-customer-contact">Key Contact: Sarah Jenkins</span>
+                        
+                        <!-- Health Circular SVG Gauge -->
+                        <div class="flex items-center space-x-6">
+                            <div class="flex flex-col items-end justify-center">
+                                <span id="selected-customer-status-badge" class="px-2.5 py-0.5 rounded-md text-[9px] font-extrabold uppercase tracking-wider border mb-1">Warning</span>
+                                <span class="text-[11px] text-gray-500" id="selected-customer-contact">Key Contact: Sarah Jenkins</span>
+                            </div>
+                            
+                            <div class="relative w-16 h-16 flex items-center justify-center flex-shrink-0 bg-white/5 rounded-full p-1 border border-white/5">
+                                <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                                    <path class="text-white/5" stroke="currentColor" stroke-width="3" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                    <path id="health-gauge-ring" class="text-emerald-400 transition-all duration-1000 ease-out" stroke="currentColor" stroke-width="3" stroke-dasharray="0, 100" stroke-linecap="round" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                </svg>
+                                <span id="selected-customer-health-text" class="absolute text-[11px] font-extrabold text-white font-mono">0%</span>
+                            </div>
                         </div>
                     </div>
                     
@@ -241,12 +251,13 @@
                     <!-- 1. Signal Analyst Card (Delay: 0ms) -->
                     <div id="card-signal" class="glass-panel rounded-2xl p-5 shadow-lg opacity-0 transition-opacity duration-300">
                         <div class="flex items-center justify-between border-b border-white/5 pb-2.5 mb-4">
-                            <h4 class="text-xs font-extrabold text-cyan-400 tracking-wider uppercase flex items-center">
-                                <span class="mr-2">🔍</span> Signal Analyst Agent
-                            </h4>
+                            <div class="flex items-center space-x-2.5">
+                                <div class="w-6 h-6 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-xs">🔍</div>
+                                <h4 class="text-xs font-extrabold text-cyan-400 tracking-wider uppercase">Signal Analyst Agent</h4>
+                            </div>
                             <div class="flex items-center space-x-2">
-                                <span id="analyst-sentiment" class="text-[9px] px-2 py-0.5 rounded-md font-bold uppercase tracking-wider border"></span>
-                                <span id="analyst-urgency" class="text-[9px] px-2 py-0.5 rounded-md font-bold uppercase tracking-wider border"></span>
+                                <span id="analyst-sentiment" class="text-[9px] px-2.5 py-0.5 rounded-md font-bold uppercase tracking-wider border"></span>
+                                <span id="analyst-urgency" class="text-[9px] px-2.5 py-0.5 rounded-md font-bold uppercase tracking-wider border"></span>
                             </div>
                         </div>
                         
@@ -272,18 +283,26 @@
                         <div id="card-risk" class="border border-red-500/10 bg-red-500/5 rounded-2xl p-5 shadow-glow-critical/5 opacity-0 flex flex-col justify-between">
                             <div>
                                 <div class="flex justify-between items-center mb-3.5 border-b border-red-500/10 pb-2">
-                                    <h4 class="text-xs font-extrabold text-red-400 tracking-wider uppercase flex items-center">
-                                        <span class="mr-2">⚠️</span> Risk Assessor Agent
-                                    </h4>
-                                    <span id="risk-score-badge" class="text-[9px] font-bold px-2 py-0.5 rounded-md border text-red-400 border-red-500/20"></span>
+                                    <div class="flex items-center space-x-2.5">
+                                        <div class="w-6 h-6 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-center text-xs">🛡️</div>
+                                        <h4 class="text-xs font-extrabold text-red-400 tracking-wider uppercase">Risk Assessor Agent</h4>
+                                    </div>
+                                    <span id="risk-score-badge" class="text-[9px] font-bold px-2 py-0.5 rounded-md border text-red-400 border-red-500/20 uppercase tracking-wider"></span>
                                 </div>
                                 <p id="risk-reason" class="text-xs text-gray-300 leading-relaxed min-h-[96px]">
                                     <!-- Risk reason -->
                                 </p>
                             </div>
-                            <div class="mt-4 pt-3 border-t border-red-500/10 flex justify-between items-center text-[10px] text-gray-500">
-                                <span class="font-medium">Confidence Score</span>
-                                <span id="risk-confidence" class="font-bold text-red-400/80 font-mono"></span>
+                            
+                            <!-- Confidence Index Progress Bar -->
+                            <div class="space-y-1.5 mt-4 pt-3 border-t border-red-500/10">
+                                <div class="flex justify-between items-center text-[10px] text-gray-500">
+                                    <span class="font-medium">Confidence Index</span>
+                                    <span id="risk-confidence" class="font-bold text-red-400 font-mono"></span>
+                                </div>
+                                <div class="w-full bg-white/5 rounded-full h-1 overflow-hidden">
+                                    <div id="risk-confidence-bar" class="bg-red-500 h-1 rounded-full transition-all duration-500 ease-out" style="width: 0%;"></div>
+                                </div>
                             </div>
                         </div>
 
@@ -291,10 +310,11 @@
                         <div id="card-context" class="border border-emerald-500/10 bg-emerald-500/5 rounded-2xl p-5 shadow-glow-emerald/5 opacity-0 flex flex-col justify-between">
                             <div>
                                 <div class="flex justify-between items-center mb-3.5 border-b border-emerald-500/10 pb-2">
-                                    <h4 class="text-xs font-extrabold text-emerald-400 tracking-wider uppercase flex items-center">
-                                        <span class="mr-2">💡</span> Context Builder Agent
-                                    </h4>
-                                    <span class="text-[9px] font-bold px-2 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-md uppercase tracking-wider">Advocate</span>
+                                    <div class="flex items-center space-x-2.5">
+                                        <div class="w-6 h-6 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-xs">⚖️</div>
+                                        <h4 class="text-xs font-extrabold text-emerald-400 tracking-wider uppercase">Context Builder Agent</h4>
+                                    </div>
+                                    <span class="text-[9px] font-bold px-2 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-md uppercase tracking-wider font-mono">Advocate</span>
                                 </div>
                                 <p id="context-reason" class="text-xs text-gray-300 leading-relaxed mb-4 min-h-[56px]">
                                     <!-- Context alt reasoning -->
@@ -304,9 +324,16 @@
                                     <!-- Growth opportunities -->
                                 </ul>
                             </div>
-                            <div class="mt-4 pt-3 border-t border-emerald-500/10 flex justify-between items-center text-[10px] text-gray-500">
-                                <span class="font-medium">Confidence Score</span>
-                                <span id="context-confidence" class="font-bold text-emerald-400/80 font-mono"></span>
+                            
+                            <!-- Confidence Index Progress Bar -->
+                            <div class="space-y-1.5 mt-4 pt-3 border-t border-emerald-500/10">
+                                <div class="flex justify-between items-center text-[10px] text-gray-500">
+                                    <span class="font-medium">Confidence Index</span>
+                                    <span id="context-confidence" class="font-bold text-emerald-400 font-mono"></span>
+                                </div>
+                                <div class="w-full bg-white/5 rounded-full h-1 overflow-hidden">
+                                    <div id="context-confidence-bar" class="bg-emerald-500 h-1 rounded-full transition-all duration-500 ease-out" style="width: 0%;"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -314,10 +341,10 @@
                     <!-- 4. Decision Synthesizer Consensus Card (Delay: 1500ms) -->
                     <div id="card-consensus" class="glass-panel rounded-2xl p-5 shadow-lg border border-blue-500/10 shadow-glow-blue/5 opacity-0">
                         <div class="flex justify-between items-center mb-4 border-b border-white/5 pb-2.5">
-                            <h4 class="text-xs font-extrabold text-blue-400 tracking-wider uppercase flex items-center">
-                                <span class="mr-2">👑</span> Decision Synthesizer Agent
-                            </h4>
-                            <span id="synthesis-confidence" class="text-[9px] font-bold px-2 py-0.5 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-md font-mono"></span>
+                            <div class="flex items-center space-x-2.5">
+                                <div class="w-6 h-6 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-xs">👑</div>
+                                <h4 class="text-xs font-extrabold text-blue-400 tracking-wider uppercase">Decision Synthesizer Agent</h4>
+                            </div>
                         </div>
                         
                         <!-- Consensus paragraph -->
@@ -343,6 +370,17 @@
                                 </p>
                             </div>
                         </div>
+                        
+                        <!-- Confidence Index Progress Bar -->
+                        <div class="space-y-1.5 mt-5 pt-3 border-t border-white/5">
+                            <div class="flex justify-between items-center text-[10px] text-gray-500">
+                                <span class="font-medium">Orchestration Consensus Confidence</span>
+                                <span id="synthesis-confidence" class="font-bold text-blue-400 font-mono"></span>
+                            </div>
+                            <div class="w-full bg-white/5 rounded-full h-1 overflow-hidden">
+                                <div id="synthesis-confidence-bar" class="bg-blue-500 h-1 rounded-full transition-all duration-500 ease-out" style="width: 0%;"></div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- 5. Recommendations Cards Card (Delay: 2000ms) -->
@@ -356,7 +394,7 @@
                         <div class="border border-white/5 bg-gray-950/30 rounded-xl p-4">
                             <button onclick="togglePlaybookDetails()" class="w-full flex items-center justify-between text-xs text-gray-400 hover:text-gray-200 focus:outline-none">
                                 <span class="flex items-center text-xs">
-                                    <span class="mr-2">📖</span> RAG Playbook Reference: <strong id="playbook-name" class="ml-1 text-cyan-400 font-bold uppercase">None</strong>
+                                    <span class="mr-2">📖</span> RAG Playbook Reference: <strong id="playbook-name" class="ml-1 text-cyan-400 font-bold uppercase font-mono">None</strong>
                                 </span>
                                 <span id="playbook-toggle-icon">▼</span>
                             </button>
@@ -370,6 +408,56 @@
             </div>
         </section>
     </main>
+
+    <!-- Architecture Inspector Modal -->
+    <div id="arch-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div class="glass-panel bg-[#0d1226]/90 border border-white/10 max-w-2xl w-full rounded-2xl p-6 shadow-2xl relative overflow-hidden animate-slide-in">
+            <button onclick="closeArchModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-200 text-lg font-bold">×</button>
+            <h3 class="text-base font-bold text-white tracking-tight mb-4 flex items-center">
+                <span class="mr-2">📐</span> NexusIQ Pipeline Architecture
+            </h3>
+            
+            <div class="space-y-4 text-xs text-gray-400 leading-relaxed overflow-y-auto max-h-[70vh] pr-2 custom-scrollbar">
+                <p>
+                    NexusIQ orchestrates a team of specialized AI agents working together to generate consensus-based next best actions:
+                </p>
+                <div class="bg-gray-950/80 p-4 rounded-xl border border-white/5 font-mono text-[10px] text-cyan-400 overflow-x-auto">
+<pre>
+CUSTOMER SELECT ➔ TRIGGER PIPELINE
+  │
+  ▼
+[1. SIGNAL ANALYST] ───Sentiment / Urgency / Pain Points
+  │
+  ├──► [2. RISK ASSESSOR] ────Churn Risk (High/Medium/Low)
+  │
+  ├──► [3. CONTEXT BUILDER] ──Advocate / Upsell Options
+  │
+  ▼
+[PLAYBOOK RETRIEVAL] ───TF-IDF RAG Document Matching
+  │
+  ▼
+[4. DECISION SYNTHESIZER] ──👑 Consensus & Action Generation
+  │
+  ▼
+HUMAN APPROVAL (CSM) ───Accept / Modify / Reject feedback
+  │
+  ▼
+[STRATEGIC MEMORY] ─────Logs written to strategic.json
+</pre>
+                </div>
+                <div class="grid grid-cols-2 gap-4 mt-4">
+                    <div class="border border-white/5 p-3 rounded-lg bg-white/5">
+                        <strong class="text-white block mb-1">Explainable AI (RAG)</strong>
+                        Retrieved playbooks actively shape recommendations depending on identified customer keywords.
+                    </div>
+                    <div class="border border-white/5 p-3 rounded-lg bg-white/5">
+                        <strong class="text-white block mb-1">Strategic Loop</strong>
+                        Accepted/Rejected actions are written to persistent storage to track historically successful choices.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Footer -->
     <footer class="border-t border-white/5 px-6 py-3 text-center text-xs text-gray-500 bg-[#080b18]/80 backdrop-blur-md">
@@ -392,8 +480,9 @@
                 renderCustomerCards();
             } catch (err) {
                 console.error("Error loading customers:", err);
+                showToast("Error loading customers database", "error");
                 document.getElementById('customer-list').innerHTML = `
-                    <div class="text-center py-12 text-red-400 border border-red-500/10 bg-red-500/5 rounded-xl p-4">
+                    <div class="text-center py-12 text-red-400 border border-red-500/10 bg-red-500/5 rounded-xl p-4 animate-slide-in">
                         <p class="font-bold">Error loading database</p>
                         <p class="text-xs mt-1 text-red-300/80">${err.message}</p>
                     </div>
@@ -483,8 +572,8 @@
 
                         <div class="mt-3 pt-3 border-t border-white/5 flex justify-end">
                             <button onclick="event.stopPropagation(); triggerAnalysis('${cust.id}')" 
-                                    class="bg-blue-600/10 hover:bg-blue-600 text-blue-400 hover:text-white border border-blue-500/25 text-[10px] font-bold px-3 py-1.5 rounded-lg transition duration-150">
-                                Analyze Account
+                                    class="bg-blue-600/10 hover:bg-blue-600 text-blue-400 hover:text-white border border-blue-500/25 text-[10px] font-bold px-3 py-1.5 rounded-lg transition duration-150 animate-pulse">
+                                Analyze
                             </button>
                         </div>
                     </div>
@@ -526,16 +615,27 @@
                 document.getElementById('selected-customer-renewal').textContent = customer.contract_end;
                 document.getElementById('selected-customer-contact').textContent = `Key Contact: ${customer.key_contact}`;
                 
-                const healthSpan = document.getElementById('selected-customer-health');
-                healthSpan.textContent = `${customer.health_score}/100`;
-                healthSpan.className = "font-semibold";
-                if (customer.health_score < 50) healthSpan.classList.add('text-red-400');
-                else if (customer.health_score < 70) healthSpan.classList.add('text-amber-400');
-                else healthSpan.classList.add('text-emerald-400');
+                // SVG Health Ring fill calculation
+                const healthRing = document.getElementById('health-gauge-ring');
+                const healthText = document.getElementById('selected-customer-health-text');
+                
+                // Animate circular ring fill (circumference of 100 on stroke-dasharray)
+                healthRing.style.strokeDasharray = `${customer.health_score}, 100`;
+                healthText.textContent = `${customer.health_score}%`;
+                
+                // Health gauge color thresholds
+                healthRing.classList.remove('text-red-400', 'text-amber-400', 'text-emerald-400');
+                if (customer.health_score < 50) {
+                    healthRing.classList.add('text-red-400');
+                } else if (customer.health_score < 70) {
+                    healthRing.classList.add('text-amber-400');
+                } else {
+                    healthRing.classList.add('text-emerald-400');
+                }
 
                 const statusBadge = document.getElementById('selected-customer-status-badge');
                 statusBadge.textContent = customer.status;
-                statusBadge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider border";
+                statusBadge.className = "px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase tracking-wider border";
                 if (customer.status === 'At Risk') statusBadge.classList.add('bg-red-500/10', 'text-red-400', 'border-red-500/20');
                 else if (customer.status === 'Warning') statusBadge.classList.add('bg-amber-500/10', 'text-amber-400', 'border-amber-500/20');
                 else if (customer.status === 'Healthy') statusBadge.classList.add('bg-emerald-500/10', 'text-emerald-400', 'border-emerald-500/20');
@@ -543,6 +643,8 @@
 
                 // Load persistent feedback history from database
                 loadFeedbackHistory(customerId);
+                
+                showToast(`Loaded account Profile for ${customer.name}`, "info");
             }
         };
 
@@ -579,6 +681,49 @@
             }
         }
 
+        // Custom Toast system helper
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `p-4 rounded-xl shadow-2xl border text-xs font-semibold flex items-center space-x-3 pointer-events-auto transition-all duration-300 transform translate-x-20 opacity-0 min-w-[280px] max-w-sm`;
+            
+            let bg = 'bg-[#0d1226] border-white/5 text-gray-200';
+            let icon = 'ℹ️';
+            
+            if (type === 'success') {
+                bg = 'bg-emerald-950/90 border-emerald-500/20 text-emerald-300';
+                icon = '✓';
+            } else if (type === 'error') {
+                bg = 'bg-red-950/90 border-red-500/20 text-red-300';
+                icon = '✗';
+            } else if (type === 'warning') {
+                bg = 'bg-amber-950/90 border-amber-500/20 text-amber-300';
+                icon = '⚠️';
+            } else if (type === 'info') {
+                bg = 'bg-blue-950/90 border-blue-500/20 text-blue-300';
+                icon = '⚡';
+            }
+
+            toast.className += ` ${bg}`;
+            toast.innerHTML = `
+                <span class="w-5 h-5 rounded-md flex items-center justify-center bg-white/5 border border-white/10 text-xs">${icon}</span>
+                <span class="flex-grow">${message}</span>
+            `;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.remove('translate-x-20', 'opacity-0');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('translate-x-20', 'opacity-0');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, 3500);
+        }
+
         // Trigger multi-agent pipeline analysis
         window.triggerAnalysis = async function(customerId) {
             selectCustomer(customerId);
@@ -607,6 +752,8 @@
             progressBar.style.width = '0%';
             pipelineStatus.textContent = "Processing";
             pipelineStatus.className = "text-[10px] text-amber-400 font-extrabold tracking-wider uppercase animate-pulse";
+            
+            showToast("Initializing multi-agent pipeline...", "info");
 
             // Helper to set active loading state
             function setStepLoading(iconEl, textEl) {
@@ -661,8 +808,10 @@
 
                 // Trigger backend analysis
                 const res = await fetch(`/api/analyze/${customerId}`);
-                if (!res.ok) throw new Error('Analysis pipeline failed.');
+                if (!res.ok) throw new Error('Backend analysis pipeline returned an error.');
                 const data = await res.json();
+                
+                if (data.error) throw new Error(data.error);
 
                 progressBar.style.width = '100%';
                 setStepComplete(stepSynthesisIcon, stepSynthesisText);
@@ -677,6 +826,8 @@
 
                 pipelineStatus.textContent = "Complete";
                 pipelineStatus.className = "text-[10px] text-emerald-400 font-extrabold tracking-wider uppercase";
+                
+                showToast("Multi-agent decision synthesis complete", "success");
 
             } catch (err) {
                 console.error("Error running agent analysis:", err);
@@ -684,7 +835,7 @@
                 placeholder.classList.remove('hidden');
                 pipelineStatus.textContent = "Error";
                 pipelineStatus.className = "text-[10px] text-red-500 font-extrabold tracking-wider uppercase";
-                alert(`Error running agent pipeline: ${err.message}`);
+                showToast(`Pipeline execution failed: ${err.message}`, "error");
             }
         };
 
@@ -715,18 +866,33 @@
             setTimeout(() => {
                 cardRisk.classList.remove('opacity-0');
                 cardRisk.classList.add('animate-slide-in');
+                
+                // Animate progress confidence bar
+                const bar = document.getElementById('risk-confidence-bar');
+                const val = document.getElementById('risk-confidence').textContent;
+                bar.style.width = val;
             }, 500);
 
             // Reveal 3: Context Card (1000ms)
             setTimeout(() => {
                 cardContext.classList.remove('opacity-0');
                 cardContext.classList.add('animate-slide-in');
+                
+                // Animate progress confidence bar
+                const bar = document.getElementById('context-confidence-bar');
+                const val = document.getElementById('context-confidence').textContent;
+                bar.style.width = val;
             }, 1000);
 
             // Reveal 4: Consensus Card (1500ms)
             setTimeout(() => {
                 cardConsensus.classList.remove('opacity-0');
                 cardConsensus.classList.add('animate-slide-in');
+                
+                // Animate progress confidence bar
+                const bar = document.getElementById('synthesis-confidence-bar');
+                const val = document.getElementById('synthesis-confidence').textContent;
+                bar.style.width = val;
             }, 1500);
 
             // Reveal 5: Recommendations Card (2000ms)
@@ -783,6 +949,7 @@
             // 2. Risk Assessor
             document.getElementById('risk-reason').textContent = risk.reason;
             document.getElementById('risk-confidence').textContent = `${Math.round(risk.confidence * 100)}%`;
+            document.getElementById('risk-confidence-bar').style.width = '0%'; // will animate on reveal
             
             const riskBadge = document.getElementById('risk-score-badge');
             riskBadge.textContent = `${risk.risk_level} Risk`;
@@ -795,6 +962,7 @@
             // 3. Context Builder
             document.getElementById('context-reason').textContent = context.alternative_reasoning;
             document.getElementById('context-confidence').textContent = `${Math.round(context.confidence * 100)}%`;
+            document.getElementById('context-confidence-bar').style.width = '0%'; // will animate on reveal
 
             // Opportunities list
             const oppContainer = document.getElementById('context-opportunities');
@@ -808,23 +976,37 @@
 
             // 4. Decision Synthesizer
             document.getElementById('synthesis-consensus').textContent = synthesis.consensus;
-            document.getElementById('synthesis-confidence').textContent = `CONSENSUS CONFIDENCE: ${Math.round(synthesis.confidence * 100)}%`;
+            document.getElementById('synthesis-confidence').textContent = `${Math.round(synthesis.confidence * 100)}%`;
+            document.getElementById('synthesis-confidence-bar').style.width = '0%'; // will animate on reveal
             document.getElementById('synthesis-if-acted').textContent = synthesis.if_acted;
             document.getElementById('synthesis-if-ignored').textContent = synthesis.if_ignored;
 
-            // Recommendations List rendering
+            // Recommendations List rendering with Priority Rankings
             const recsContainer = document.getElementById('synthesis-recommendations');
             recsContainer.innerHTML = '';
             synthesis.recommendations.forEach((rec, idx) => {
+                let rankBadgeColor = 'bg-red-500/10 text-red-400 border-red-500/20';
+                let rankTitle = '#1 CRITICAL ACTION';
+                
+                if (idx === 1) {
+                    rankBadgeColor = 'bg-amber-500/10 text-amber-400 border-amber-500/20';
+                    rankTitle = '#2 STRATEGIC OPTIMIZATION';
+                } else if (idx === 2) {
+                    rankBadgeColor = 'bg-blue-500/10 text-blue-400 border-blue-500/20';
+                    rankTitle = '#3 TACTICAL ENGAGEMENT';
+                }
+
                 const itemHtml = `
                     <div class="flex items-start justify-between bg-[#0b0f22]/50 border border-white/5 p-4 rounded-xl hover:border-blue-500/20 transition-colors">
-                        <div class="flex items-start space-x-3.5 pr-2">
-                            <div class="w-5 h-5 mt-0.5 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-[10px] font-bold text-blue-400 flex-shrink-0 font-mono">
-                                ${idx + 1}
+                        <div class="flex-grow pr-4">
+                            <div class="flex items-center space-x-2 mb-2">
+                                <span class="px-2 py-0.5 rounded text-[8px] font-extrabold border ${rankBadgeColor} tracking-wider font-mono">
+                                    ${rankTitle}
+                                </span>
                             </div>
                             <p class="text-xs text-gray-200 leading-relaxed font-semibold">${rec}</p>
                         </div>
-                        <div class="flex items-center space-x-1.5 flex-shrink-0">
+                        <div class="flex items-center space-x-1.5 flex-shrink-0 self-center">
                             <button onclick="feedbackRecommendation('${rec.replace(/'/g, "\\'")}', 'Accept')" class="px-2.5 py-1 bg-emerald-500/10 hover:bg-emerald-500 text-emerald-400 hover:text-white border border-emerald-500/20 rounded-md text-[10px] font-bold transition">Accept</button>
                             <button onclick="feedbackRecommendation('${rec.replace(/'/g, "\\'")}', 'Modify')" class="px-2.5 py-1 bg-amber-500/10 hover:bg-amber-500 text-amber-400 hover:text-white border border-amber-500/20 rounded-md text-[10px] font-bold transition">Modify</button>
                             <button onclick="feedbackRecommendation('${rec.replace(/'/g, "\\'")}', 'Reject')" class="px-2.5 py-1 bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white border border-red-500/20 rounded-md text-[10px] font-bold transition">Reject</button>
@@ -869,22 +1051,38 @@
                     })
                 });
 
-                if (!response.ok) throw new Error('Failed to record feedback action.');
+                if (!response.ok) throw new Error('Feedback registry endpoint error.');
                 
                 // Reload feedback history banner immediately
                 await loadFeedbackHistory(selectedCustomerId);
                 
-                console.log(`Feedback persisted: ${action} for ${selectedCustomerId}`);
+                showToast(`Persistent Audit: Recommendation "${action}ed"`, "success");
 
             } catch (err) {
                 console.error("Error persisting feedback:", err);
-                alert(`Error saving feedback: ${err.message}`);
+                showToast(`Failed to persist audit feedback: ${err.message}`, "error");
             }
+        };
+
+        // Interactive Architecture modal controllers
+        window.openArchModal = function() {
+            document.getElementById('arch-modal').classList.remove('hidden');
+        };
+        
+        window.closeArchModal = function() {
+            document.getElementById('arch-modal').classList.add('hidden');
         };
 
         document.getElementById('trigger-analysis-btn').addEventListener('click', () => {
             if (selectedCustomerId) {
                 triggerAnalysis(selectedCustomerId);
+            }
+        });
+
+        // Close modal on background click
+        document.getElementById('arch-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'arch-modal') {
+                closeArchModal();
             }
         });
 
