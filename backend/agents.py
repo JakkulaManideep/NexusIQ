@@ -375,3 +375,351 @@ def run_risk_heuristics(metrics: dict, signal_output: dict) -> dict:
 
 def neg_words_found_in_points(pain_points):
     return len(pain_points) > 0 and pain_points[0] != "No active pain points detected"
+
+
+def context_builder(metrics: dict, signal_output: dict) -> dict:
+    """
+    Acts as the Devil's Advocate / Customer Advocate.
+    Intentionally identifies positive opportunities, mitigating explanations, and expansion pathways.
+    Utilizes real LLMs if API keys are set, otherwise falls back to a deterministic heuristics engine.
+    """
+    gemini_key = os.environ.get("GEMINI_API_KEY")
+    openai_key = os.environ.get("OPENAI_API_KEY")
+    anthropic_key = os.environ.get("ANTHROPIC_API_KEY")
+
+    # 1. Try Anthropic (Claude) if key is present
+    if anthropic_key:
+        try:
+            import anthropic
+            client = anthropic.Anthropic(api_key=anthropic_key)
+            prompt = f"""
+You are the Context Builder (Advocate / Challenger) Agent in an Agentic Customer Success platform.
+Your purpose is to look past immediate churn risks and identify hidden opportunities, positive signals, and alternative explanations.
+
+Customer Profile Metrics:
+{json.dumps(metrics, indent=2)}
+
+Signal Analyst Findings:
+{json.dumps(signal_output, indent=2)}
+
+Determine:
+1. Alternative Reasoning (A challenger perspective finding positive signs, explaining away risk flags, or showing why the customer might stay)
+2. Growth Opportunities (A list of 2-3 specific expansion, training, upsell, or relationship-building opportunities)
+3. Confidence (A float between 0.0 and 1.0)
+
+Format the output strictly as a JSON object with these keys:
+- alternative_reasoning (string)
+- growth_opportunities (list of strings)
+- confidence (float)
+
+Return ONLY the raw JSON string. Do not include markdown codeblocks or text before/after.
+"""
+            message = client.messages.create(
+                model="claude-3-5-sonnet-20241022",
+                max_tokens=1000,
+                temperature=0,
+                system="You are a strict JSON generator. Never return prose.",
+                messages=[{"role": "user", "content": prompt}]
+            )
+            text_res = message.content[0].text.strip()
+            if text_res.startswith("```"):
+                text_res = re.sub(r"^```(?:json)?\n", "", text_res)
+                text_res = re.sub(r"\n```$", "", text_res)
+            return json.loads(text_res.strip())
+        except Exception as e:
+            print(f"[Context Builder] Anthropic API failed, trying fallbacks: {e}")
+
+    # 2. Try Gemini if key is present
+    if gemini_key:
+        try:
+            import google.generativeai as genai
+            genai.configure(api_key=gemini_key)
+            model = genai.GenerativeModel('gemini-1.5-flash')
+            prompt = f"""
+You are the Context Builder (Customer Advocate) Agent of NexusIQ. Identify positive opportunities and mitigating factors.
+
+Customer Profile Metrics:
+{json.dumps(metrics, indent=2)}
+
+Signal Analyst Findings:
+{json.dumps(signal_output, indent=2)}
+
+Respond with a JSON object matching these exact keys:
+- alternative_reasoning (Alternative positive perspective or risk mitigation reasoning)
+- growth_opportunities (List of strings for upsell/relationship building)
+- confidence (Float between 0.0 and 1.0)
+
+Respond ONLY with raw JSON. No markdown wrappers.
+"""
+            response = model.generate_content(prompt)
+            text_res = response.text.strip()
+            if text_res.startswith("```"):
+                text_res = re.sub(r"^```(?:json)?\n", "", text_res)
+                text_res = re.sub(r"\n```$", "", text_res)
+            return json.loads(text_res.strip())
+        except Exception as e:
+            print(f"[Context Builder] Gemini API failed, trying fallbacks: {e}")
+
+    # 3. Try OpenAI if key is present
+    if openai_key:
+        try:
+            from openai import OpenAI
+            client = OpenAI(api_key=openai_key)
+            prompt = f"""
+Provide a customer advocate analysis looking for growth and upsells.
+Metrics: {json.dumps(metrics)}
+Signals: {json.dumps(signal_output)}
+
+Format output as a raw JSON object with keys: alternative_reasoning, growth_opportunities, confidence.
+"""
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0,
+                response_format={"type": "json_object"}
+            )
+            text_res = response.choices[0].message.content.strip()
+            return json.loads(text_res)
+        except Exception as e:
+            print(f"[Context Builder] OpenAI API failed, trying fallbacks: {e}")
+
+    # 4. Fallback to Heuristics Engine
+    return run_context_heuristics(metrics, signal_output)
+
+
+def run_context_heuristics(metrics: dict, signal_output: dict) -> dict:
+    health = metrics.get("health_score", 100)
+    topics = signal_output.get("topics", [])
+    sentiment = signal_output.get("sentiment", "Neutral")
+    
+    opportunities = []
+    
+    # Heuristics for Innoflow Systems (Expansion)
+    if "Account Expansion" in topics or health >= 80:
+        alt_reasoning = f"Customer has an exceptional health index of {health}/100 and shows strong positive engagement. There is zero risk of churn. This account is primed for rapid expansion."
+        opportunities = [
+            "Finalize contract addendum for the pending 50 additional seat licenses.",
+            "Propose multi-year contract options with a standard 10% volume discount.",
+            "Introduce advanced collaboration modules to expand footprint into other departments."
+        ]
+        confidence = 0.95
+        
+    # Heuristics for CloudX Technologies (At Risk / Churn)
+    elif "Competitor Threat" in topics and health < 50:
+        alt_reasoning = "While the executive sponsor left and they are auditing software spend, the client has actively engaged us to discuss options. This is a critical window to establish a strong relationship with the incoming leadership team, demonstrate clear historical value, and reset their expectations."
+        opportunities = [
+            "Schedule a VIP welcome call with our Customer Success Director and the new incoming leadership.",
+            "Conduct a comprehensive Value Utilization Audit to showcase how much efficiency they gained over the past year.",
+            "Offer a customized enterprise bundle or flexible quarterly payment terms to address budget audit concerns."
+        ]
+        confidence = 0.82
+        
+    # Heuristics for Acme Corp / Apex Solutions (Warning / Integration Issues)
+    elif "Technical Integration" in topics or "Performance Issues" in topics:
+        alt_reasoning = "The customer's frustration stems entirely from initial onboarding blockers (CRM integration timeouts). Since key contacts are actively complaining and requesting support calls, engagement remains high. Resolving these technical hurdles immediately will build deep trust and clear the path for full product adoption."
+        opportunities = [
+            "Assign a dedicated solutions engineer for a live 1-on-1 CRM sync debugging call.",
+            "Invite their admin team to our advanced developer integration workshop.",
+            "Propose a post-onboarding optimization review to ensure custom workflows are optimized."
+        ]
+        confidence = 0.88
+        
+    # Heuristics for general/stable accounts (Vortex Media)
+    else:
+        alt_reasoning = f"Customer account is healthy and stable (Health: {health}/100). The current touchpoints are general or low priority, suggesting consistent usage with minimal friction. This is an ideal time to build advocacy."
+        opportunities = [
+            "Invite their CS lead to present a case study at our next user community event.",
+            "Provide early access to the new beta feature pipeline to drive stickiness.",
+            "Propose a routine check-in call to discuss long-term strategic roadmaps."
+        ]
+        confidence = 0.90
+        
+    return {
+        "alternative_reasoning": alt_reasoning,
+        "growth_opportunities": opportunities,
+        "confidence": confidence
+    }
+
+
+def synthesizer(signal_output: dict, risk_output: dict, context_output: dict, playbook_text: str) -> dict:
+    """
+    Acts as a Senior Manager / Synthesizer.
+    Consolidates the findings from the Signal Analyst, Risk Assessor, and Context Builder,
+    incorporates retrieved organizational playbook recommendations, and delivers final consensus actions.
+    Utilizes real LLMs if API keys are set, otherwise falls back to a deterministic heuristics engine.
+    """
+    gemini_key = os.environ.get("GEMINI_API_KEY")
+    openai_key = os.environ.get("OPENAI_API_KEY")
+    anthropic_key = os.environ.get("ANTHROPIC_API_KEY")
+
+    # 1. Try Anthropic (Claude) if key is present
+    if anthropic_key:
+        try:
+            import anthropic
+            client = anthropic.Anthropic(api_key=anthropic_key)
+            prompt = f"""
+You are the Decision Synthesizer Agent in an Agentic Next Best Action Platform.
+Your role is like a Senior Customer Success Director who reviews all reports, cross-references corporate playbooks,
+and makes final, structured recommendations.
+
+Signal Analyst Report:
+{json.dumps(signal_output, indent=2)}
+
+Risk Assessor Report:
+{json.dumps(risk_output, indent=2)}
+
+Context Builder Report:
+{json.dumps(context_output, indent=2)}
+
+Retrieved Playbook Content:
+\"\"\"
+{playbook_text}
+\"\"\"
+
+Produce the final decision synthesis. Format the output strictly as a JSON object with these keys:
+- consensus (string: summarized analysis of the conflicting reports and playbook alignment)
+- recommendations (list of 3 strings: the top 3 actionable recommendations)
+- confidence (float between 0.0 and 1.0)
+- if_acted (string: expected business outcome if acted upon)
+- if_ignored (string: business risk if ignored)
+
+Return ONLY the raw JSON string. Do not include markdown codeblocks or text before/after.
+"""
+            message = client.messages.create(
+                model="claude-3-5-sonnet-20241022",
+                max_tokens=1000,
+                temperature=0,
+                system="You are a strict JSON generator. Never return prose.",
+                messages=[{"role": "user", "content": prompt}]
+            )
+            text_res = message.content[0].text.strip()
+            if text_res.startswith("```"):
+                text_res = re.sub(r"^```(?:json)?\n", "", text_res)
+                text_res = re.sub(r"\n```$", "", text_res)
+            return json.loads(text_res.strip())
+        except Exception as e:
+            print(f"[Synthesizer] Anthropic API failed, trying fallbacks: {e}")
+
+    # 2. Try Gemini if key is present
+    if gemini_key:
+        try:
+            import google.generativeai as genai
+            genai.configure(api_key=gemini_key)
+            model = genai.GenerativeModel('gemini-1.5-flash')
+            prompt = f"""
+You are the Decision Synthesizer Agent of NexusIQ. Consolidate analysis and playbooks into a final next-best-action synthesis.
+
+Signal Findings: {json.dumps(signal_output)}
+Risk Findings: {json.dumps(risk_output)}
+Context Findings: {json.dumps(context_output)}
+Playbook Guidelines: {playbook_text}
+
+Respond with a JSON object matching these exact keys:
+- consensus (Summary alignment of reports)
+- recommendations (List of 3 actionable items)
+- confidence (Float between 0.0 and 1.0)
+- if_acted (Business outcome if acted)
+- if_ignored (Business risk if ignored)
+
+Respond ONLY with raw JSON. No markdown wrappers.
+"""
+            response = model.generate_content(prompt)
+            text_res = response.text.strip()
+            if text_res.startswith("```"):
+                text_res = re.sub(r"^```(?:json)?\n", "", text_res)
+                text_res = re.sub(r"\n```$", "", text_res)
+            return json.loads(text_res.strip())
+        except Exception as e:
+            print(f"[Synthesizer] Gemini API failed, trying fallbacks: {e}")
+
+    # 3. Try OpenAI if key is present
+    if openai_key:
+        try:
+            from openai import OpenAI
+            client = OpenAI(api_key=openai_key)
+            prompt = f"""
+Synthesize CS analysis using:
+Signals: {json.dumps(signal_output)}
+Risk: {json.dumps(risk_output)}
+Context: {json.dumps(context_output)}
+Playbook: {playbook_text}
+
+Format output as a raw JSON object with keys: consensus, recommendations, confidence, if_acted, if_ignored.
+recommendations must be a list of 3 strings.
+"""
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0,
+                response_format={"type": "json_object"}
+            )
+            text_res = response.choices[0].message.content.strip()
+            return json.loads(text_res)
+        except Exception as e:
+            print(f"[Synthesizer] OpenAI API failed, trying fallbacks: {e}")
+
+    # 4. Fallback to Heuristics Engine
+    return run_synthesizer_heuristics(signal_output, risk_output, context_output, playbook_text)
+
+
+def run_synthesizer_heuristics(signal_output: dict, risk_output: dict, context_output: dict, playbook_text: str) -> dict:
+    topics = signal_output.get("topics", [])
+    risk_level = risk_output.get("risk_level", "Medium")
+    
+    # 1. Expansion Case
+    if "Account Expansion" in topics or risk_level == "Low":
+        consensus = "The account is in an excellent healthy state. There is active buyer intent to purchase 50 additional seat licenses. We will align with their expansion timeline to maximize upsell value while maintaining system health."
+        recommends = [
+            "Proactively finalize and send over the contract addendum for the 50 additional seat licenses.",
+            "Schedule a post-onboarding training workshop for the new CSM users joining next week.",
+            "Schedule a multi-year contract options review with their CS Director to offer long-term loyalty pricing."
+        ]
+        confidence = 0.95
+        if_acted = "Will secure immediate upsell expansion revenue, increase seats by 50, and establish a long-term contract lock-in."
+        if_ignored = "Could delay the onboarding of their team members, causing integration adoption friction, and miss out on long-term renewal options."
+        
+    # 2. Competitor Threat Churn Case
+    elif "Competitor Threat" in topics:
+        consensus = "The account is at critical risk due to competitor evaluation and executive sponsor departure. However, the client's willingness to review options provides a vital window for intervention. We must align with our Competitor Threat playbook to establish new executive sponsors and prove value."
+        recommends = [
+            "Schedule an urgent alignment call with the new incoming VP of Operations and our CS Director.",
+            "Conduct a comprehensive Value Utilization Audit showcasing platform ROI over the last 12 months.",
+            "Offer a customized enterprise bundle or flexible quarterly payment terms to address budget audit concerns."
+        ]
+        confidence = 0.86
+        if_acted = "Will de-escalate competitor threat, establish relationship with new leadership, and salvage $320,000 ARR contract."
+        if_ignored = "High probability of complete churn within 60-90 days, resulting in a loss of $320,000 ARR."
+        
+    # 3. Technical Integration Warning Case
+    elif "Technical Integration" in topics or "Performance Issues" in topics:
+        consensus = "The account is in a Warning state due to initial data sync timeouts. Since key contacts are actively complaining and requesting support, they are highly engaged. Resolving the CRM synchronization bug immediately is the primary path to success."
+        recommends = [
+            "Assign a senior integrations engineer to debug the CRM sync timeout issues in a live 1-on-1 call today.",
+            "Establish automated daily sync health alerts for the customer's operations team to rebuild confidence.",
+            "Offer a post-sync workflow training session for the team to accelerate product utilization."
+        ]
+        confidence = 0.90
+        if_acted = "Will resolve the sync blockers, drive daily active usage, and restore the account status back to Healthy."
+        if_ignored = "Sync timeout will lead to implementation failure, client requesting a refund, and high probability of churn at renewal."
+        
+    # 4. General / Stable case
+    else:
+        consensus = "The account is stable with steady usage and low support ticket activity. No active risks or critical opportunities exist. This is the optimal window to convert the account into a reference advocate."
+        recommends = [
+            "Invite their Customer Success lead to present a case study at our next user community event.",
+            "Grant early access to the upcoming beta feature pipeline to drive platform stickiness.",
+            "Schedule a standard business check-in call to align on their long-term feature roadmap request."
+        ]
+        confidence = 0.88
+        if_acted = "Will convert a stable account into an active brand advocate, generating customer marketing collateral."
+        if_ignored = "Missed opportunity to build brand advocacy; the account remains stable but static."
+        
+    return {
+        "consensus": consensus,
+        "recommendations": recommends,
+        "confidence": confidence,
+        "if_acted": if_acted,
+        "if_ignored": if_ignored
+    }
+
+
