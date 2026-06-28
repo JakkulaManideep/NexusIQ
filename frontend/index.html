@@ -87,7 +87,7 @@
             </div>
             <div>
                 <span class="text-xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-100 to-gray-400">NexusIQ</span>
-                <span class="text-[9px] block text-cyan-400 font-bold tracking-widest uppercase">Agentic Decision Cockpit</span>
+                <span class="text-xs block text-cyan-400 font-bold tracking-widest uppercase">Agentic Decision Cockpit</span>
             </div>
         </div>
         
@@ -187,6 +187,12 @@
                             <span class="text-[11px] text-gray-500 mt-2.5" id="selected-customer-contact">Key Contact: Sarah Jenkins</span>
                         </div>
                     </div>
+                    
+                    <!-- Persistent Feedback History Banner -->
+                    <div id="selected-customer-feedback-banner" class="hidden mt-5 pt-3.5 border-t border-white/5 flex items-center justify-between text-xs">
+                        <span class="text-gray-500 font-semibold uppercase tracking-wider text-[9px]">Last Strategic Audit</span>
+                        <span id="selected-customer-feedback-text" class="font-bold tracking-wide"></span>
+                    </div>
                 </div>
 
                 <!-- Analysis Control Header Bar -->
@@ -269,7 +275,7 @@
                                     <h4 class="text-xs font-extrabold text-red-400 tracking-wider uppercase flex items-center">
                                         <span class="mr-2">⚠️</span> Risk Assessor Agent
                                     </h4>
-                                    <span id="risk-score-badge" class="text-[9px] font-bold px-2 py-0.5 rounded-md border"></span>
+                                    <span id="risk-score-badge" class="text-[9px] font-bold px-2 py-0.5 rounded-md border text-red-400 border-red-500/20"></span>
                                 </div>
                                 <p id="risk-reason" class="text-xs text-gray-300 leading-relaxed min-h-[96px]">
                                     <!-- Risk reason -->
@@ -534,8 +540,44 @@
                 else if (customer.status === 'Warning') statusBadge.classList.add('bg-amber-500/10', 'text-amber-400', 'border-amber-500/20');
                 else if (customer.status === 'Healthy') statusBadge.classList.add('bg-emerald-500/10', 'text-emerald-400', 'border-emerald-500/20');
                 else if (customer.status === 'Stable') statusBadge.classList.add('bg-blue-500/10', 'text-blue-400', 'border-blue-500/20');
+
+                // Load persistent feedback history from database
+                loadFeedbackHistory(customerId);
             }
         };
+
+        // Load feedback history helper
+        async function loadFeedbackHistory(customerId) {
+            const banner = document.getElementById('selected-customer-feedback-banner');
+            const feedbackText = document.getElementById('selected-customer-feedback-text');
+            
+            try {
+                const response = await fetch(`/api/feedback/${customerId}`);
+                if (!response.ok) throw new Error('Feedback read failed');
+                const data = await response.json();
+                
+                if (data.last_feedback) {
+                    const lastFb = data.last_feedback;
+                    banner.classList.remove('hidden');
+                    
+                    if (lastFb.action === 'Accept') {
+                        feedbackText.textContent = `Last recommendation accepted: "${lastFb.recommendation}"`;
+                        feedbackText.className = "font-bold text-emerald-400 tracking-wide text-right max-w-lg truncate block";
+                    } else if (lastFb.action === 'Reject') {
+                        feedbackText.textContent = `Last recommendation rejected: "${lastFb.recommendation}"`;
+                        feedbackText.className = "font-bold text-red-400 tracking-wide text-right max-w-lg truncate block";
+                    } else if (lastFb.action === 'Modify') {
+                        feedbackText.textContent = `Last recommendation modified: "${lastFb.recommendation}"`;
+                        feedbackText.className = "font-bold text-amber-400 tracking-wide text-right max-w-lg truncate block";
+                    }
+                } else {
+                    banner.classList.add('hidden');
+                }
+            } catch (err) {
+                console.error("Error fetching feedback status:", err);
+                banner.classList.add('hidden');
+            }
+        }
 
         // Trigger multi-agent pipeline analysis
         window.triggerAnalysis = async function(customerId) {
@@ -810,9 +852,34 @@
             }
         };
 
-        // CSM Feedback interaction logging
-        window.feedbackRecommendation = function(recommendation, action) {
-            alert(`Strategic Memory Updated:\n\nFeedback Action: "${action}"\nRecommendation: "${recommendation}"\n\nThis decision has been saved to Strategic Memory for pipeline fine-tuning.`);
+        // CSM Feedback interaction logging to Strategic Memory
+        window.feedbackRecommendation = async function(recommendation, action) {
+            if (!selectedCustomerId) return;
+            
+            try {
+                const response = await fetch('/api/feedback', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        customer_id: selectedCustomerId,
+                        recommendation: recommendation,
+                        action: action
+                    })
+                });
+
+                if (!response.ok) throw new Error('Failed to record feedback action.');
+                
+                // Reload feedback history banner immediately
+                await loadFeedbackHistory(selectedCustomerId);
+                
+                console.log(`Feedback persisted: ${action} for ${selectedCustomerId}`);
+
+            } catch (err) {
+                console.error("Error persisting feedback:", err);
+                alert(`Error saving feedback: ${err.message}`);
+            }
         };
 
         document.getElementById('trigger-analysis-btn').addEventListener('click', () => {

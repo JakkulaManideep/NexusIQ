@@ -1,1 +1,8 @@
-[]
+[
+  {
+    "customer_id": "acme-corp",
+    "recommendation": "Schedule an urgent alignment meeting.",
+    "action": "Accept",
+    "timestamp": "2026-06-28T10:01:41.890447Z"
+  }
+]

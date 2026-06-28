@@ -264,6 +264,27 @@ async def serve_index():
         return FileResponse(index_path)
     return {"error": "index.html not found"}
 
+from pydantic import BaseModel
+
+class FeedbackPayload(BaseModel):
+    customer_id: str
+    recommendation: str
+    action: str
+
+@app.post("/api/feedback")
+async def post_feedback(payload: FeedbackPayload):
+    from memory import save_feedback
+    result = save_feedback(payload.customer_id, payload.recommendation, payload.action)
+    return result
+
+@app.get("/api/feedback/{customer}")
+async def get_feedback(customer: str):
+    from memory import get_last_feedback
+    last_fb = get_last_feedback(customer)
+    return {"last_feedback": last_fb}
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
+
+
