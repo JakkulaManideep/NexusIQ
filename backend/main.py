@@ -80,6 +80,58 @@ async def get_signal_analysis(customer: str):
         "analysis": analysis
     }
 
+@app.get("/api/risk/{customer}")
+async def get_risk_assessment(customer: str):
+    # 1. Load customer metrics
+    customers_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "customers.json")
+    metrics = None
+    if os.path.exists(customers_path):
+        with open(customers_path, "r", encoding="utf-8") as f:
+            try:
+                customers_data = json.load(f)
+                for item in customers_data:
+                    if item.get("id") == customer:
+                        metrics = item
+                        break
+            except Exception as e:
+                print(f"Error loading customers database: {e}")
+                
+    if not metrics:
+        return {"error": f"Customer '{customer}' not found in database."}
+
+    # 2. Load episodic memory (interactions)
+    episodic_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "episodic.json")
+    raw_signal = ""
+    if os.path.exists(episodic_path):
+        with open(episodic_path, "r", encoding="utf-8") as f:
+            try:
+                interactions_data = json.load(f)
+                for item in interactions_data:
+                    if item.get("customer_id") == customer:
+                        raw_signal = " ".join([i.get("content", "") for i in item.get("interactions", [])])
+                        break
+            except Exception as e:
+                print(f"Error loading episodic memory: {e}")
+                
+    if not raw_signal:
+        raw_signal = "No customer interactions found in episodic memory."
+
+    # 3. Call Signal Analyst
+    from agents import signal_analyst, risk_assessor
+    signal_output = signal_analyst(raw_signal)
+
+    # 4. Call Risk Assessor
+    risk_output = risk_assessor(metrics, signal_output)
+
+    # 5. Return chained result
+    return {
+        "customer_id": customer,
+        "metrics": metrics,
+        "signal_analysis": signal_output,
+        "risk_assessment": risk_output
+    }
+
+
 
 
 
