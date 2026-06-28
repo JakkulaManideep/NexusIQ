@@ -469,6 +469,7 @@ HUMAN APPROVAL (CSM) ───Accept / Modify / Reject feedback
         let customers = [];
         let filteredCustomersList = [];
         let selectedCustomerId = null;
+        let currentRecommendations = [];
 
         // Fetch Customers on page load
         async function fetchCustomers() {
@@ -982,6 +983,7 @@ HUMAN APPROVAL (CSM) ───Accept / Modify / Reject feedback
             document.getElementById('synthesis-if-ignored').textContent = synthesis.if_ignored;
 
             // Recommendations List rendering with Priority Rankings
+            currentRecommendations = synthesis.recommendations;
             const recsContainer = document.getElementById('synthesis-recommendations');
             recsContainer.innerHTML = '';
             synthesis.recommendations.forEach((rec, idx) => {
@@ -1007,9 +1009,9 @@ HUMAN APPROVAL (CSM) ───Accept / Modify / Reject feedback
                             <p class="text-xs text-gray-200 leading-relaxed font-semibold">${rec}</p>
                         </div>
                         <div class="flex items-center space-x-1.5 flex-shrink-0 self-center">
-                            <button onclick="feedbackRecommendation('${rec.replace(/'/g, "\\'")}', 'Accept')" class="px-2.5 py-1 bg-emerald-500/10 hover:bg-emerald-500 text-emerald-400 hover:text-white border border-emerald-500/20 rounded-md text-[10px] font-bold transition">Accept</button>
-                            <button onclick="feedbackRecommendation('${rec.replace(/'/g, "\\'")}', 'Modify')" class="px-2.5 py-1 bg-amber-500/10 hover:bg-amber-500 text-amber-400 hover:text-white border border-amber-500/20 rounded-md text-[10px] font-bold transition">Modify</button>
-                            <button onclick="feedbackRecommendation('${rec.replace(/'/g, "\\'")}', 'Reject')" class="px-2.5 py-1 bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white border border-red-500/20 rounded-md text-[10px] font-bold transition">Reject</button>
+                            <button onclick="feedbackRecommendationByIndex(${idx}, 'Accept')" class="px-2.5 py-1 bg-emerald-500/10 hover:bg-emerald-500 text-emerald-400 hover:text-white border border-emerald-500/20 rounded-md text-[10px] font-bold transition">Accept</button>
+                            <button onclick="feedbackRecommendationByIndex(${idx}, 'Modify')" class="px-2.5 py-1 bg-amber-500/10 hover:bg-amber-500 text-amber-400 hover:text-white border border-amber-500/20 rounded-md text-[10px] font-bold transition">Modify</button>
+                            <button onclick="feedbackRecommendationByIndex(${idx}, 'Reject')" class="px-2.5 py-1 bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white border border-red-500/20 rounded-md text-[10px] font-bold transition">Reject</button>
                         </div>
                     </div>
                 `;
@@ -1031,6 +1033,13 @@ HUMAN APPROVAL (CSM) ───Accept / Modify / Reject feedback
             } else {
                 detailsDiv.classList.add('hidden');
                 toggleIcon.textContent = "▼";
+            }
+        };
+
+        // Helper to log feedback actions using recommendation index
+        window.feedbackRecommendationByIndex = function(idx, action) {
+            if (currentRecommendations && currentRecommendations[idx]) {
+                feedbackRecommendation(currentRecommendations[idx], action);
             }
         };
 
