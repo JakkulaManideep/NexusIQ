@@ -1,0 +1,69 @@
+[
+    {
+        "customer_id": "acme-corp",
+        "interactions": [
+            {
+                "date": "2026-06-25",
+                "type": "email",
+                "sender": "Sarah Jenkins",
+                "content": "Hi Team, we are seeing some performance degradation when fetching recommendations. Also, our sales team is asking about the Gong integration because they are evaluating alternative platforms next month. Can we jump on a call tomorrow? This is getting urgent for our VP of Operations."
+            },
+            {
+                "date": "2026-06-20",
+                "type": "support_ticket",
+                "sender": "Sarah Jenkins",
+                "content": "CRM Sync is failing with timeout errors. We've missed three sync cycles today."
+            }
+        ]
+    },
+    {
+        "customer_id": "cloudx-tech",
+        "interactions": [
+            {
+                "date": "2026-06-27",
+                "type": "email",
+                "sender": "David Chen",
+                "content": "Hi, David here. Following up on our license review. Honestly, the team engagement has been very low because the interface feels slow. Also, our executive sponsor just left the company, and the new leadership is auditing all software spend. They are asking if we should renew our contract at all since ZoomInfo offers a bundle that includes similar features. We need to discuss options for downgrading or potentially terminating our plan next month."
+            }
+        ]
+    },
+    {
+        "customer_id": "innoflow-systems",
+        "interactions": [
+            {
+                "date": "2026-06-26",
+                "type": "email",
+                "sender": "Marcus Aurelius",
+                "content": "Hello! We are absolutely loving the new multi-agent consensus screen. The recommendations are extremely helpful and have saved our CSM team hours of manual work. We are onboarding 50 more CSMs next week and want to discuss purchasing additional seat licenses. Can you send over the contract addendum for the seat upgrades?"
+            }
+        ]
+    },
+    {
+        "customer_id": "vortex-media",
+        "interactions": [
+            {
+                "date": "2026-06-24",
+                "type": "support_ticket",
+                "sender": "Elena Rostova",
+                "content": "Quick question: is there a rate limit on the strategic memory API? We are setting up a custom reporting script. No rush, just want to check if the docs are updated."
+            },
+            {
+                "date": "2026-06-15",
+                "type": "email",
+                "sender": "Elena Rostova",
+                "content": "Overall usage has been steady. The team is happy with the stability since the last patch. Thanks for the quick support!"
+            }
+        ]
+    },
+    {
+        "customer_id": "apex-solutions",
+        "interactions": [
+            {
+                "date": "2026-06-26",
+                "type": "email",
+                "sender": "Dr. Jordan Peterson",
+                "content": "We are struggling with the initial CRM data sync. The error messages are constant, and we haven't been able to roll the system out to our core team yet. If this sync issue is not resolved by next week, we will have to suspend implementation and request a refund. Also, the pricing seems high for a platform we cannot fully utilize."
+            }
+        ]
+    }
+]

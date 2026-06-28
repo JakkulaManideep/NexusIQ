@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexusIQ - Agentic Next Best Action Platform</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        darkBg: '#090d16',
+                        panelBg: 'rgba(20, 27, 45, 0.7)',
+                        accentBlue: '#3b82f6',
+                        accentCyan: '#06b6d4',
+                        accentEmerald: '#10b981',
+                        accentWarning: '#f59e0b',
+                        accentCritical: '#ef4444'
+                    },
+                    boxShadow: {
+                        'glow-blue': '0 0 15px rgba(59, 130, 246, 0.4)',
+                        'glow-cyan': '0 0 15px rgba(6, 182, 212, 0.4)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass-panel {
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.01);
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-darkBg text-gray-100 min-h-screen flex flex-col font-sans antialiased">
+    <!-- Header -->
+    <header class="border-b border-gray-800 bg-panelBg/80 backdrop-blur-md px-6 py-4 flex items-center justify-between sticky top-0 z-50">
+        <div class="flex items-center space-x-3">
+            <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-cyan-400 flex items-center justify-center font-bold text-white shadow-lg shadow-blue-500/25">
+                N
+            </div>
+            <div>
+                <span class="text-xl font-bold tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-200 to-gray-400">NexusIQ</span>
+                <span class="text-xs block text-cyan-400 font-medium tracking-widest uppercase">Agentic Decision Cockpit</span>
+            </div>
+        </div>
+        <div class="flex items-center space-x-4">
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                <span class="w-2 h-2 mr-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                API Connected
+            </span>
+        </div>
+    </header>
+
+    <!-- Main Workspace Layout -->
+    <main class="flex-grow flex h-[calc(100vh-73px)] overflow-hidden">
+        <!-- Left Sidebar: Customers List (1/3 width) -->
+        <section class="w-1/3 border-r border-gray-800 bg-[#0f1524]/60 flex flex-col h-full">
+            <div class="p-5 border-b border-gray-800 flex items-center justify-between">
+                <div>
+                    <h2 class="text-lg font-bold text-gray-100">SaaS Customers</h2>
+                    <p class="text-xs text-gray-400">Select a account to run agentic analysis</p>
+                </div>
+                <span id="customer-count" class="bg-gray-800 text-gray-300 text-xs px-2.5 py-1 rounded-full font-semibold border border-gray-700">0</span>
+            </div>
+
+            <!-- Customer Cards Container -->
+            <div id="customer-list" class="flex-grow overflow-y-auto p-4 space-y-3 custom-scrollbar">
+                <!-- Loading State -->
+                <div id="loading-customers" class="text-center py-12 text-gray-400">
+                    <svg class="animate-spin h-8 w-8 mx-auto mb-3 text-blue-500" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span>Loading customers database...</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Right Side: Agent Orchestration Workspace (2/3 width) -->
+        <section class="w-2/3 bg-darkBg flex flex-col h-full relative overflow-y-auto custom-scrollbar p-6">
+            <!-- No Customer Selected Initial State -->
+            <div id="empty-state" class="flex-grow flex flex-col items-center justify-center text-center py-20">
+                <div class="w-24 h-24 rounded-full bg-blue-600/5 flex items-center justify-center border border-blue-500/10 mb-6 text-gray-400 text-4xl shadow-inner">
+                    🎛️
+                </div>
+                <h3 class="text-xl font-bold text-gray-100 mb-2">No Customer Selected</h3>
+                <p class="text-gray-400 max-w-sm text-sm">
+                    Select a customer card from the left panel and trigger the **Analyze** pipeline to initiate the multi-agent consensus workflow.
+                </p>
+            </div>
+
+            <!-- Customer Workspace (Hidden initially) -->
+            <div id="workspace-content" class="hidden space-y-6">
+                <!-- Selected Customer Header Summary -->
+                <div class="glass-panel bg-panelBg rounded-2xl p-6 shadow-xl relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <div class="flex items-center space-x-3 mb-2">
+                                <h2 id="selected-customer-name" class="text-2xl font-bold text-white">Acme Corp</h2>
+                                <span id="selected-customer-industry" class="text-xs bg-gray-800 text-cyan-400 border border-gray-700 px-2 py-0.5 rounded-full font-medium">Fintech</span>
+                            </div>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-2 mt-4 text-sm">
+                                <div>
+                                    <span class="text-gray-400 block text-xs uppercase tracking-wider">Annual Recurring Revenue</span>
+                                    <span id="selected-customer-arr" class="font-semibold text-gray-200">$180,000</span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-400 block text-xs uppercase tracking-wider">Health Index</span>
+                                    <span id="selected-customer-health" class="font-semibold text-emerald-400">82/100</span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-400 block text-xs uppercase tracking-wider">Segment</span>
+                                    <span id="selected-customer-segment" class="font-semibold text-gray-200">Enterprise</span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-400 block text-xs uppercase tracking-wider">Contract Renewal Date</span>
+                                    <span id="selected-customer-renewal" class="font-semibold text-gray-200">2026-12-31</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex flex-col items-end">
+                            <span id="selected-customer-status-badge" class="px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider">Warning</span>
+                            <span class="text-xs text-gray-400 mt-2" id="selected-customer-contact">Key Contact: Sarah Jenkins</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analysis Controls -->
+                <div class="flex items-center justify-between p-4 bg-blue-500/5 border border-blue-500/10 rounded-xl">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-2.5 h-2.5 rounded-full bg-blue-400 animate-ping"></div>
+                        <span class="text-sm font-medium text-blue-300">Ready for Agent Pipeline Analysis</span>
+                    </div>
+                    <button id="trigger-analysis-btn" class="bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white font-semibold text-sm px-6 py-2.5 rounded-xl shadow-lg shadow-blue-500/25 transition duration-150 transform hover:-translate-y-0.5 active:translate-y-0">
+                        ⚡ Run NexusIQ Agents
+                    </button>
+                </div>
+
+                <!-- Stub Agent Orchestrator Container -->
+                <div class="glass-panel bg-panelBg rounded-2xl p-6 shadow-xl">
+                    <h3 class="text-base font-bold text-gray-200 mb-4 border-b border-gray-800 pb-2">Multi-Agent Processing Hub</h3>
+                    <div class="py-12 text-center text-gray-500 text-sm">
+                        Agent visual steps and final next best actions will appear here after clicking "Run NexusIQ Agents".
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-gray-800 px-6 py-3 text-center text-xs text-gray-500 bg-[#0f1524]/80 backdrop-blur-md">
+        NexusIQ – Agentic Next Best Action Platform &copy; 2026
+    </footer>
+
+    <!-- Frontend logic script -->
+    <script>
+        let customers = [];
+        let selectedCustomerId = null;
+
+        // Fetch Customers on page load
+        async function fetchCustomers() {
+            try {
+                const response = await fetch('/api/customers');
+                if (!response.ok) throw new Error('Failed to load customers');
+                customers = await response.json();
+                renderCustomerCards();
+            } catch (err) {
+                console.error("Error loading customers:", err);
+                document.getElementById('customer-list').innerHTML = `
+                    <div class="text-center py-12 text-red-400 border border-red-500/10 bg-red-500/5 rounded-xl p-4">
+                        <p class="font-bold">Error loading database</p>
+                        <p class="text-xs mt-1 text-red-300/80">${err.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Format currency helper
+        function formatARR(value) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                maximumFractionDigits: 0
+            }).format(value);
+        }
+
+        // Render customer list cards
+        function renderCustomerCards() {
+            const listContainer = document.getElementById('customer-list');
+            const countBadge = document.getElementById('customer-count');
+            
+            if (customers.length === 0) {
+                listContainer.innerHTML = '<div class="text-center py-12 text-gray-500 text-sm">No customers found in database.</div>';
+                countBadge.textContent = "0";
+                return;
+            }
+            
+            countBadge.textContent = customers.length.toString();
+            listContainer.innerHTML = '';
+
+            customers.forEach(cust => {
+                const isSelected = cust.id === selectedCustomerId;
+                
+                // Color badges based on status
+                let statusBadgeColor = 'bg-gray-800 text-gray-300 border-gray-700';
+                if (cust.status === 'At Risk') statusBadgeColor = 'bg-red-500/10 text-red-400 border-red-500/20';
+                else if (cust.status === 'Warning') statusBadgeColor = 'bg-amber-500/10 text-amber-400 border-amber-500/20';
+                else if (cust.status === 'Healthy') statusBadgeColor = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+                else if (cust.status === 'Stable') statusBadgeColor = 'bg-blue-500/10 text-blue-400 border-blue-500/20';
+
+                // Color score based on health index
+                let scoreColor = 'text-emerald-400';
+                if (cust.health_score < 50) scoreColor = 'text-red-400';
+                else if (cust.health_score < 70) scoreColor = 'text-amber-400';
+
+                const cardHtml = `
+                    <div onclick="selectCustomer('${cust.id}')" 
+                         class="glass-panel p-4 rounded-xl cursor-pointer transition-all duration-200 relative group overflow-hidden 
+                         ${isSelected ? 'bg-blue-600/15 border-blue-500/50 shadow-glow-blue' : 'bg-panelBg/50 hover:bg-panelBg hover:border-gray-700'}"
+                         data-id="${cust.id}">
+                        
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="font-bold text-white group-hover:text-blue-300 transition-colors duration-150">${cust.name}</h3>
+                                <span class="text-xs text-gray-400">${cust.industry}</span>
+                            </div>
+                            <span class="inline-flex px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-md border ${statusBadgeColor}">
+                                ${cust.status}
+                            </span>
+                        </div>
+
+                        <div class="flex items-center justify-between mt-4">
+                            <div>
+                                <span class="text-[10px] text-gray-500 block uppercase tracking-wider">ARR</span>
+                                <span class="text-sm font-semibold text-gray-300">${formatARR(cust.arr)}</span>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-[10px] text-gray-500 block uppercase tracking-wider">Health</span>
+                                <span class="text-sm font-bold ${scoreColor}">${cust.health_score}</span>
+                            </div>
+                        </div>
+
+                        <div class="mt-3 pt-3 border-t border-gray-800/60 flex justify-end">
+                            <button onclick="event.stopPropagation(); triggerAnalysis('${cust.id}')" 
+                                    class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition duration-150">
+                                Analyze
+                            </button>
+                        </div>
+                    </div>
+                `;
+                listContainer.insertAdjacentHTML('beforeend', cardHtml);
+            });
+        }
+
+        // Selection logic
+        window.selectCustomer = function(customerId) {
+            selectedCustomerId = customerId;
+            renderCustomerCards();
+
+            // Populate workspace header
+            const customer = customers.find(c => c.id === customerId);
+            if (customer) {
+                document.getElementById('empty-state').classList.add('hidden');
+                document.getElementById('workspace-content').classList.remove('hidden');
+
+                document.getElementById('selected-customer-name').textContent = customer.name;
+                document.getElementById('selected-customer-industry').textContent = customer.industry;
+                document.getElementById('selected-customer-arr').textContent = formatARR(customer.arr);
+                document.getElementById('selected-customer-segment').textContent = customer.segment;
+                document.getElementById('selected-customer-renewal').textContent = customer.contract_end;
+                document.getElementById('selected-customer-contact').textContent = `Key Contact: ${customer.key_contact}`;
+                
+                const healthSpan = document.getElementById('selected-customer-health');
+                healthSpan.textContent = `${customer.health_score}/100`;
+                healthSpan.className = "font-semibold";
+                if (customer.health_score < 50) healthSpan.classList.add('text-red-400');
+                else if (customer.health_score < 70) healthSpan.classList.add('text-amber-400');
+                else healthSpan.classList.add('text-emerald-400');
+
+                const statusBadge = document.getElementById('selected-customer-status-badge');
+                statusBadge.textContent = customer.status;
+                statusBadge.className = "px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider border";
+                if (customer.status === 'At Risk') statusBadge.classList.add('bg-red-500/10', 'text-red-400', 'border-red-500/20');
+                else if (customer.status === 'Warning') statusBadge.classList.add('bg-amber-500/10', 'text-amber-400', 'border-amber-500/20');
+                else if (customer.status === 'Healthy') statusBadge.classList.add('bg-emerald-500/10', 'text-emerald-400', 'border-emerald-500/20');
+                else if (customer.status === 'Stable') statusBadge.classList.add('bg-blue-500/10', 'text-blue-400', 'border-blue-500/20');
+            }
+        };
+
+        // Stub trigger analysis
+        window.triggerAnalysis = function(customerId) {
+            selectCustomer(customerId);
+            alert(`Ready to trigger Multi-Agent Analysis for ${customers.find(c => c.id === customerId).name}. Agent code is currently waiting for business logic implementation.`);
+        };
+
+        document.getElementById('trigger-analysis-btn').addEventListener('click', () => {
+            if (selectedCustomerId) {
+                triggerAnalysis(selectedCustomerId);
+            }
+        });
+
+        // Initialize on load
+        fetchCustomers();
+    </script>
+</body>
+</html>

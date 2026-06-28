@@ -1,0 +1,8 @@
+RENEWAL AND PRICING RISK PLAYBOOK
+When a customer complains about product pricing, budget cuts, or is approaching their renewal window with low health scores:
+
+1. Early Renewal Kickoff: Initiate renewal discussions 90 days before the contract expiration date. Do not wait until the last 30 days.
+2. License Clean-up: Audit seat utilization. If the customer is paying for unused seats, proactively offer to optimize their contract size to build goodwill.
+3. Quantify Business Value: Schedule a Quarterly Business Review (QBR) to present a business impact summary. Show clear alignment of NexusIQ outcomes with their corporate goals.
+4. Flexible Payment Terms: Offer quarterly or semi-annual billing options instead of annual upfront billing if cash flow is an issue.
+5. Escalation: If renewal remains high-risk, flag to the Account Executive team for executive intervention or discount authorization.

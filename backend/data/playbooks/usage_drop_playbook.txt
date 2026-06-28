@@ -1,0 +1,8 @@
+PRODUCT ENGAGEMENT & USAGE DROP PLAYBOOK
+When customer telemetry indicates a significant drop in weekly active users (WAU), daily active users (DAU), or API transaction volume:
+
+1. Identify Champion Bottlenecks: Identify if the primary admin or champion has left the company or changed roles. A drop in usage is often caused by lack of active administration.
+2. Conduct Training Audit: Reach out to offer a complimentary training session or optimization workshop for new team members.
+3. Review Open Support Tickets: Check if there are outstanding high-priority support tickets or bugs blocking user workflows.
+4. Technical Integration Check: Reach out to the client technical lead to ensure there are no broken integration pipelines or API token expirations.
+5. Setup Alert Frequency: Increase internal alert frequency and schedule weekly check-ins with their key operations contacts.

@@ -1,0 +1,57 @@
+[
+    {
+        "id": "acme-corp",
+        "name": "Acme Corp",
+        "arr": 180000,
+        "health_score": 62,
+        "status": "Warning",
+        "industry": "E-commerce",
+        "segment": "Enterprise",
+        "key_contact": "Sarah Jenkins (VP of Operations)",
+        "contract_end": "2026-12-31"
+    },
+    {
+        "id": "cloudx-tech",
+        "name": "CloudX Technologies",
+        "arr": 320000,
+        "health_score": 45,
+        "status": "At Risk",
+        "industry": "Fintech",
+        "segment": "Strategic",
+        "key_contact": "David Chen (CTO)",
+        "contract_end": "2026-09-30"
+    },
+    {
+        "id": "innoflow-systems",
+        "name": "Innoflow Systems",
+        "arr": 950000,
+        "health_score": 88,
+        "status": "Healthy",
+        "industry": "Logistics",
+        "segment": "Enterprise",
+        "key_contact": "Marcus Aurelius (VP Product)",
+        "contract_end": "2027-04-15"
+    },
+    {
+        "id": "vortex-media",
+        "name": "Vortex Media",
+        "arr": 150000,
+        "health_score": 75,
+        "status": "Stable",
+        "industry": "Digital Media",
+        "segment": "Mid-Market",
+        "key_contact": "Elena Rostova (Head of CS)",
+        "contract_end": "2027-02-28"
+    },
+    {
+        "id": "apex-solutions",
+        "name": "Apex Solutions",
+        "arr": 220000,
+        "health_score": 58,
+        "status": "Warning",
+        "industry": "Healthcare",
+        "segment": "Enterprise",
+        "key_contact": "Dr. Jordan Peterson (COO)",
+        "contract_end": "2026-10-15"
+    }
+]

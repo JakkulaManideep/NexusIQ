@@ -1,0 +1,8 @@
+COMPETITOR THREAT RESOLUTION PLAYBOOK
+When a customer mentions a competitor (e.g., Gong, Clari, ZoomInfo, Salesloft) or indicates they are evaluating alternative solutions, follow this playbook:
+
+1. Acknowledge and Validate: Do not get defensive. Acknowledge their research and ask what specific features or pricing models they find appealing in the competitor.
+2. Schedule Executive Alignment: Immediately set up a call with the customer's executive sponsor and our Customer Success Director or VP.
+3. Feature Comparison: Highlight our unique agentic platform advantages, such as long-term strategic memory, explainable AI chains, and native multi-agent collaboration (which traditional chatbots do not have).
+4. Review Value Metrics: Prepare a custom ROI deck showing how much time and churn risk NexusIQ has saved them over the last 12 months.
+5. Pricing Flexibility: If budget is the primary driver for competitor evaluation, consult the Finance team for a potential multi-year discount or custom tier option.
