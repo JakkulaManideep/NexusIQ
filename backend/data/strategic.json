@@ -4,5 +4,11 @@
     "recommendation": "Schedule an urgent alignment meeting.",
     "action": "Accept",
     "timestamp": "2026-06-28T10:01:41.890447Z"
+  },
+  {
+    "customer_id": "acme-corp",
+    "recommendation": "Perform a Value Realization Audit to demonstrate ARR ROI.",
+    "action": "Accept",
+    "timestamp": "2026-06-29T14:42:23.707320Z"
   }
 ]

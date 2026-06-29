@@ -593,7 +593,6 @@ HUMAN APPROVAL (CSM) ───Accept / Modify / Reject feedback
             document.getElementById('empty-state').classList.add('hidden');
             document.getElementById('workspace-content').classList.remove('hidden');
             
-            document.getElementById('agent-placeholder').classList.remove('hidden');
             document.getElementById('agent-loading-state').classList.add('hidden');
             document.getElementById('agent-output-content').classList.add('hidden');
             document.getElementById('pipeline-status').textContent = "Idle";
@@ -729,7 +728,6 @@ HUMAN APPROVAL (CSM) ───Accept / Modify / Reject feedback
         window.triggerAnalysis = async function(customerId) {
             selectCustomer(customerId);
             
-            const placeholder = document.getElementById('agent-placeholder');
             const loadingState = document.getElementById('agent-loading-state');
             const outputContent = document.getElementById('agent-output-content');
             const pipelineStatus = document.getElementById('pipeline-status');
@@ -747,7 +745,6 @@ HUMAN APPROVAL (CSM) ───Accept / Modify / Reject feedback
             const stepSynthesisText = document.getElementById('step-synthesis-text');
 
             // Reset workspace panels
-            placeholder.classList.add('hidden');
             outputContent.classList.add('hidden');
             loadingState.classList.remove('hidden');
             progressBar.style.width = '0%';
